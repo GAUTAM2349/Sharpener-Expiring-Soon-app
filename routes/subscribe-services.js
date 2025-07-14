@@ -1,9 +1,10 @@
 const express = require('express');
-const { subscribePushService } = require('../controllers/subscribe-services');
+const { subscribePushService, unsubscribePushService } = require('../controllers/subscribe-services');
 
 const router = express.Router();
 
 
-router.post('/push-notification',(req,res,next)=>{console.log('reached subscription router'); next();}, subscribePushService);
+router.post('/push-notification', subscribePushService);
+router.post('/unsubscribe', unsubscribePushService);
 
 module.exports = router;

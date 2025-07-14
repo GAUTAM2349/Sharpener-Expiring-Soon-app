@@ -15,7 +15,6 @@ const signup = async (req, res) => {
     return res.status(400).json({ message: "Invalid email format." });
   }
 
-  email = email.toLowerCase();
 
   try {
     const existingUser = await User.findOne({ email });
@@ -30,15 +29,18 @@ const signup = async (req, res) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    await User.create({
+    const user = await User.create({
       name,
-      email,
+      email:email.toLowerCase(),
       password: hashedPassword,
     });
 
-    return res.status(200).json({
+    const authenticationToken = setUser(user);
+
+    return res.status(201).json({
       success: true,
       message: "User created successfully",
+      token: authenticationToken
     });
   } catch (error) {
     console.log(error);
@@ -86,8 +88,18 @@ const login = async (req, res) => {
     return res.status(500).json({
       message: "Internal Server Error",
       error: error.message,
-    });
+    }); 
   }
 };
 
-module.exports = { signup, login };
+const userLoginStatus = (req, res) => {
+  const { _id, name } = req.user;
+
+  return res.status(200).json({
+    message: "User is logged in",
+    user: { id: _id, name }
+  });
+};
+
+
+module.exports = { signup, login, userLoginStatus };

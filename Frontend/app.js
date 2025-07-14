@@ -13,6 +13,9 @@ import EditProduct from "./src/components/Product/EditProduct";
 import CategoryProducts from "./src/components/Home/CategoryProducts";
 import { registerPush } from "./utils/registerPush";
 import Login from "./src/components/Authentication/Login";
+import { PrivateRoute } from './utils/contexts/PrivateRoute';
+import { AuthProvider } from "./utils/contexts/AuthProvider";
+import Signup from "./src/components/Authentication/Signup";
 
 
 const AppLayout = () => {
@@ -22,8 +25,10 @@ const AppLayout = () => {
 
   return (
     <>
+    
       <Navbar />
       <Outlet />
+      
     </>
   );
 };
@@ -32,20 +37,26 @@ const AppLayout = () => {
 const appRouter = createBrowserRouter([
   {
     path: '/',
-    element: <AppLayout />,
+    element: <PrivateRoute><AppLayout /></PrivateRoute>,
     children: [
       { path: '/', element: <Home /> },
       { path: '/add-product', element: <AddProduct /> },
       { path: '/edit-product', element: <EditProduct /> },
-      { path: '/categories/:categoryName', element: <CategoryProducts /> }
+      { path: '/categories/:category', element: <CategoryProducts /> }
     ]
   },
   {
-    path: 'login',
+    path: '/login',
     element: <Login/>
+  },
+  {
+    path: '/register',
+    element: <Signup/>
   }
 ]);
 
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<RouterProvider router={appRouter} />);
+root.render(<AuthProvider>
+  <RouterProvider router={appRouter} />
+  </AuthProvider>);

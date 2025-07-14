@@ -13,20 +13,32 @@ const ProductCard = ({ product, onDelete }) => {
         <p className="text-sm text-gray-600">
           <span className="font-medium">Purchased:</span> {product.purchaseDate}
         </p>
-        <p className="text-sm text-gray-600">
-          <span className="font-medium">Expires:</span> {product.expiryDate}
+        <p
+          className={`text-sm ${
+            new Date(product.expiry) < new Date()
+              ? "text-red-600"
+              : "text-gray-600"
+          }`}
+        >
+          <span className="font-medium">Expires:</span> {product.expiry}
         </p>
       </div>
 
       <div className="flex justify-end gap-2 mt-2">
         <button
-          onClick={() => navigate(`/edit/${product.id}`)}
+          onClick={() =>
+            navigate(`/edit-product`, {
+              state: {
+                ...product,
+              },
+            })
+          }
           className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
         >
           Edit
         </button>
         <button
-          onClick={() => onDelete(product.id)}
+          onClick={() => onDelete(product._id)}
           className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
         >
           Delete

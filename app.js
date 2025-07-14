@@ -8,6 +8,7 @@ const connectMongoDB = require("./config/database");
 
 const notifyExpiredProducts = require("./services/cron");
 const { ProductRouter, SubscribeSeviceRouter, UserRouter } = require("./routes");
+const loggedinUsersOnly = require("./middlewares/loggedinUsersOnly");
 
 const app = express();
 
@@ -16,7 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
 
-cron.schedule('*/10 * * * *', () => {
+cron.schedule('*/1 * * * *', () => {
   console.log('Running expired product check every 2 minutes...');
   notifyExpiredProducts();
 });
@@ -25,8 +26,8 @@ cron.schedule('*/10 * * * *', () => {
 const PORT = process.env.PORT;
 
 app.use('/api/user',UserRouter);
-app.use('/api/product', ProductRouter);
-app.use('/api/subscribe-services', SubscribeSeviceRouter);
+app.use('/api/product',loggedinUsersOnly, ProductRouter);
+app.use('/api/subscribe-services',loggedinUsersOnly, SubscribeSeviceRouter);
 
 connectMongoDB();
 

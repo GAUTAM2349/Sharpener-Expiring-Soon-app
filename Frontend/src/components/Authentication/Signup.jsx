@@ -2,9 +2,9 @@ import { useContext, useState } from "react";
 import api from "../../../config/axiosConfig";
 import { Navigate, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../../utils/contexts/AuthProvider";
-import { useEffect } from "react";
 
-function Login() {
+function Signup() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { isLoading, isAuthenticated, setIsAuthenticated } = useContext(AuthContext);
@@ -17,41 +17,54 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await api.post("/user/login", {
+      const res = await api.post("/user/register", {
+        name,
         email,
         password,
       });
-      console.log("Login Success:", res.data);
 
-      const { message, token } = res.data;
+      const { token } = res.data;
 
-      if (res.status === 200) {
-        if (token) {
-          localStorage.setItem("token", token);
-          console.log("token set successfully"); 
-          setTimeout(() => {
-            // navigate("/");
-            setIsAuthenticated(true);
-          }, 0);
-        } else {
-          console.log("Authentication Error");
-          return;
-        }
+      if (res.status === 201 ) {
+        localStorage.setItem("token", token);
+        console.log("Signup successful and token stored.");
+        setTimeout(() => {
+          setIsAuthenticated(true);
+        }, 0);
+      } else {
+        console.log("Unexpected signup response:", res);
       }
     } catch (err) {
-      console.error("Login Failed:", err.res?.data || err.message);
+      console.log("Signup Failed:", err.response?.data || err.message);
     }
   };
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center px-4">
-      
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md sm:max-w-lg md:max-w-xl bg-blue-900 p-8 py-30 rounded-lg shadow-lg flex flex-col justify-between min-h-[400px]"
+        className="w-full max-w-md sm:max-w-lg md:max-w-xl bg-blue-900 p-8 py-30 rounded-lg shadow-lg flex flex-col justify-between min-h-[450px]"
       >
-        <h2 className="text-white pb-10">Buddy, login please!</h2>
+        <h2 className="text-white pb-10">Let’s get you signed up!</h2>
         <div className="flex-1">
+          <div className="mb-6">
+            <label
+              htmlFor="name"
+              className="block mb-2 text-sm font-medium text-gray-100"
+            >
+              Name
+            </label>
+            <input
+              type="text"
+              id="name"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+              placeholder="Your full name"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+
           <div className="mb-6">
             <label
               htmlFor="email"
@@ -92,12 +105,11 @@ function Login() {
           type="submit"
           className="mt-auto w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
         >
-          Submit
+          Sign Up
         </button>
-        <div className="text-white pt-14">don't have account? <span onClick={()=>navigate('/register')} className="border-b-1">Signup</span></div>
       </form>
     </div>
   );
 }
 
-export default Login;
+export default Signup;

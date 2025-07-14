@@ -1,27 +1,54 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../../../config/axiosConfig"; 
+import { AuthContext } from "../../../utils/contexts/AuthProvider";
 
 export default function AddProduct() {
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
-  const [purchaseDate, setPurchaseDate] = useState("");
-  const [category, setCategory] = useState("Food & Beverages");
+  const [purchaseDate, setPurchaseDate] = useState(() => {
+  const today = new Date();
+  return today.toISOString().split('T')[0];
+});
+  const [category, setCategory] = useState("Food");
+  const [loading, setLoading] = useState(false);
+  const {user} = useContext(AuthContext);
 
-  const handleAdd = () => {
-    alert(
-      `Product Added:\n${name} (${category})\nExpiry: ${expiryDate}\nPurchased: ${purchaseDate}`
-    );
-    navigate(-1); 
+  const handleAdd = async () => {
+    if (!name || !expiryDate || !purchaseDate || !category) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    const data = {
+      name,
+      expiry: expiryDate,
+      purchaseDate,
+      category,
+      userId: user._id
+    };
+
+    try {
+      setLoading(true);
+      await api.post("/product", data);
+      alert("Product added successfully!");
+      navigate(-1);
+    } catch (error) {
+      console.error("Error adding product:", error);
+      alert("Failed to add product.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const categories = [
-    "Food & Beverages",
-    "Healthcare & Medicines",
-    "Cosmetics & Personal Care",
-    "Household & Cleaning Supplies",
-    "Baby & Pet Products",
+    "Food",
+    "Grocery",
+    "Medicine",
+    "Cosmetics",
+    "Babycare",
     "Others",
   ];
 
@@ -51,12 +78,12 @@ export default function AddProduct() {
 
       <div>
         <label className="block text-sm font-medium mb-1">Purchase Date</label>
-        <input
-          type="date"
-          value={purchaseDate}
-          onChange={(e) => setPurchaseDate(e.target.value)}
-          className="w-full border border-gray-300 rounded-md px-3 py-2"
-        />
+          <input
+      type="date"
+      value={purchaseDate}
+      onChange={(e) => setPurchaseDate(e.target.value)}
+      className="w-full border border-gray-300 rounded-md px-3 py-2"
+    />
       </div>
 
       <div>
@@ -76,9 +103,10 @@ export default function AddProduct() {
 
       <button
         onClick={handleAdd}
-        className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
+        disabled={loading}
+        className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-50"
       >
-        Add Product
+        {loading ? "Adding..." : "Add Product"}
       </button>
     </div>
   );

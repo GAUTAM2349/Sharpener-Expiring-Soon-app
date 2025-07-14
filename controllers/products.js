@@ -13,7 +13,7 @@ const createProduct = async (req, res) => {
     } = req.body;
 
     console.log("yes it reached inside controller");
-    const userId = req.user?._id || 1; 
+    
 
     if (!name || !expiry || !purchaseDate || !category) {
       return res.status(400).json({ message: 'Required fields missing' });
@@ -24,9 +24,9 @@ const createProduct = async (req, res) => {
       expiry: new Date(expiry),
       purchaseDate: new Date(purchaseDate),
       manufacturingDate: manufacturingDate ? new Date(manufacturingDate) : null,
-      category,
+      category:category.toLowerCase(),
       description: description || '',
-      userId,
+      userId : req.user._id,
     });
 
     await newProduct.save();
@@ -38,25 +38,49 @@ const createProduct = async (req, res) => {
   }
 };
 
+
 const getUpcomingExpiries = async (req, res) => {
   try {
-    const userId = req.user?._id;
-    console.log("came inside controller")
-    const products = await Product.find({ userId })
-      .sort({ expiry: 1 }) 
+    
+
+    const {
+      category = "all",
+      sortBy = "expiry", 
+      page = 1,
+    } = req.query;
+
+    const ITEMS_PER_PAGE = 20;
+    const skip = (parseInt(page) - 1) * ITEMS_PER_PAGE;
+
+    const filter = { userId:req.user._id };
+    if (category !== "all") {
+      filter.category = category.toLowerCase();
+    }
+
+    const sortField = sortBy == "last-modified" ? "updatedAt" : "expiry";
+    const sortOrder = sortBy == "expiry" ? 1 : -1;
+
+    const sortOptions = { [sortField] : sortOrder}; 
+
+    const products = await Product.find(filter)
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(ITEMS_PER_PAGE)
       .exec();
 
     res.status(200).json({ products });
   } catch (err) {
-    console.error('Fetch error:', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Fetch error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 };
+
+
 
 const deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user._id || 1;
+    const userId = req.user._id;
 
     const product = await Product.findOne({ _id: id, userId });
     if (!product) {
@@ -74,7 +98,7 @@ const deleteProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user._id || 1;
+    const userId = req.user._id;
 
     const {
       name,

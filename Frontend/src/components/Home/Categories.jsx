@@ -1,12 +1,12 @@
 import { useNavigate } from "react-router-dom";
 
 const categories = [
-  "Food & Beverages",
-  "Healthcare & Medicines",
-  "Cosmetics & Personal Care",
-  "Household & Cleaning Supplies",
-  "Baby & Pet Products",
-  "Others",
+  "Food",
+  "Medicine",
+  "Babycare",
+  "Cosmetics ",
+  "Grocery",
+  "others"
 ];
 
 const Categories = () => {
@@ -20,7 +20,7 @@ const Categories = () => {
         {categories.map((cat) => (
           <button
             key={cat}
-            onClick={() => navigate(`/categories/${encodeURIComponent(cat)}`)}
+            onClick={() => navigate(`/categories/${cat}`)}
             className="bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400 text-center p-6 rounded-xl shadow-sm transition-all duration-200 text-lg font-medium"
           >
             {cat}

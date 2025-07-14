@@ -1,35 +1,24 @@
+const jwt = require('jsonwebtoken');
+const User = require('../models/User'); 
 
-const User = require("../models/User");
-const { getUser } = require("../services/auth");
+const loggedinUsersOnly = async (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ message: 'No token provided' });
 
-async function loggedinUsersOnly(req, res, next) {
   try {
-    const userToken = req.headers["token"];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    const user = await User.findById(decoded.id);
+    if (!user) return res.status(401).json({ message: 'User not found' });
 
-    if (!userToken) {
-      return res.status(401).json({ message: "User not authorised, please login" });
-    }
+    if (user.isBanned) return res.status(403).json({ message: 'User is banned' });
 
-    const token = userToken.split("Bearer ")[1];
-    const userId = getUser(token).id;
-
-    if (!userId) {
-      return res.status(401).json({ message: "Invalid user" });
-    }
-
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return res.status(400).json({ message: "User records not found" });
-    }
-
-    req.userId = userId;
     req.user = user;
-    console.log("user details : "+JSON.stringify(user));
     next();
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
+  } catch (err) {
+    console.error("Authentication error:", err);
+    res.status(401).json({ message: 'Invalid or expired token' });
   }
-}
+};
 
 module.exports = loggedinUsersOnly;

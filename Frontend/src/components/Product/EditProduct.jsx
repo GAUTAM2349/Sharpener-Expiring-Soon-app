@@ -1,43 +1,69 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import React, { useState, useEffect, useContext } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import api from "../../../config/axiosConfig";
+import { AuthContext } from "../../../utils/contexts/AuthProvider";
 
 export default function EditProduct() {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const location = useLocation();
+  const { user } = useContext(AuthContext);
 
   const [name, setName] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [purchaseDate, setPurchaseDate] = useState("");
   const [category, setCategory] = useState("Food & Beverages");
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-
-    const product = {
-      name: "Milk",
-      expiryDate: "2025-12-31",
-      purchaseDate: "2025-07-01",
-      category: "Food & Beverages",
-    };
-
-    setName(product.name);
-    setExpiryDate(product.expiryDate);
-    setPurchaseDate(product.purchaseDate);
-    setCategory(product.category);
-  }, [id]);
-
-  const handleUpdate = () => {
-    alert(
-      `Product Updated:\n${name} (${category})\nExpiry: ${expiryDate}\nPurchased: ${purchaseDate}`
-    );
-    navigate(-1); 
+  const formatDate = (input) => {
+    const date = new Date(input);
+    if (isNaN(date)) return "";
+    return date.toISOString().split("T")[0];
   };
 
-  const categories = [
-    "Food & Beverages",
-    "Healthcare & Medicines",
-    "Cosmetics & Personal Care",
-    "Household & Cleaning Supplies",
-    "Baby & Pet Products",
+  useEffect(() => {
+    if (location.state) {
+      const { _id, name, expiry, purchaseDate, category } = location.state;
+      setName(name || "");
+      setExpiryDate(expiry ? formatDate(expiry) : "");
+      setPurchaseDate(purchaseDate ? formatDate(purchaseDate) : "");
+      setCategory(category || "Food & Beverages");
+    }
+  }, [location.state]);
+
+  const handleUpdate = async () => {
+    if (!name || !expiryDate || !purchaseDate || !category) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    const data = {
+      name,
+      expiry: expiryDate,
+      purchaseDate,
+      category,
+      userId: user._id,
+    };
+
+    try {
+      setLoading(true);
+      const { _id } = location.state;
+      await api.put(`/product/${_id}`, data);
+      alert("Product updated successfully!");
+      navigate(-1);
+    } catch (error) {
+      console.error("Error updating product:", error);
+      alert("Failed to update product.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+   const categories = [
+    "Food",
+    "Grocery",
+    "Medicine",
+    "Cosmetics",
+    "Babycare",
     "Others",
   ];
 
@@ -92,9 +118,10 @@ export default function EditProduct() {
 
       <button
         onClick={handleUpdate}
-        className="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition"
+        disabled={loading}
+        className="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition disabled:opacity-50"
       >
-        Update Product
+        {loading ? "Updating..." : "Update Product"}
       </button>
     </div>
   );

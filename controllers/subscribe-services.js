@@ -2,9 +2,12 @@ const User = require("../models/User");
 
 
 const subscribePushService = async (req, res) => {
+  
   const subscription = req.body;
-  const userId = '686eca8b764eb6f8d9374c17'; 
-  console.log("reached push subscription controller");
+  const userId = req.user?._id; 
+
+  if(!userId) return res.status(403).json({message : "invalid userId"});
+  
 
   try {
     await User.findByIdAndUpdate(
@@ -21,4 +24,29 @@ const subscribePushService = async (req, res) => {
 };
 
 
-module.exports = { subscribePushService };
+const unsubscribePushService = async (req, res) => {
+  const userId = req.user?._id;
+
+  if (!userId) {
+    return res.status(403).json({ message: "Invalid userId" });
+  }
+
+  try {
+    await User.findByIdAndUpdate(
+      userId,
+      { $set: { pushSubscription: null } },
+      { new: true }
+    );
+    console.log("UNSBSCRIBED");
+    res.status(200).json({ message: "Unsubscribed successfully" });
+  } catch (err) {
+    console.error("Unsubscribe error:", err);
+    res.status(500).json({ error: "Failed to unsubscribe" });
+  }
+};
+
+
+
+module.exports = { subscribePushService, unsubscribePushService };
+
+
