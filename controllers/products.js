@@ -41,39 +41,48 @@ const createProduct = async (req, res) => {
 
 const getUpcomingExpiries = async (req, res) => {
   try {
-    
-
     const {
       category = "all",
-      sortBy = "expiry", 
+      sortBy = "expiry",
       page = 1,
     } = req.query;
 
-    const ITEMS_PER_PAGE = 20;
+    const ITEMS_PER_PAGE = 10;
     const skip = (parseInt(page) - 1) * ITEMS_PER_PAGE;
 
-    const filter = { userId:req.user._id };
+    const filter = { userId: req.user._id };
     if (category !== "all") {
       filter.category = category.toLowerCase();
     }
 
-    const sortField = sortBy == "last-modified" ? "updatedAt" : "expiry";
-    const sortOrder = sortBy == "expiry" ? 1 : -1;
+    const sortField = sortBy === "last-modified" ? "updatedAt" : "expiry";
+    const sortOrder = sortBy === "expiry" ? 1 : -1;
+    const sortOptions = { [sortField]: sortOrder };
 
-    const sortOptions = { [sortField] : sortOrder}; 
+    // 🔍 Total count for pagination
+    const totalItems = await Product.countDocuments(filter);
+    const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
 
+    // 📦 Fetch paginated data 
     const products = await Product.find(filter)
       .sort(sortOptions)
       .skip(skip)
       .limit(ITEMS_PER_PAGE)
       .exec();
 
-    res.status(200).json({ products });
+    // ✅ Send pagination info
+    res.status(200).json({
+      products,
+      currentPage: parseInt(page),
+      totalPages,
+      totalItems,
+    });
   } catch (err) {
     console.error("Fetch error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 
 

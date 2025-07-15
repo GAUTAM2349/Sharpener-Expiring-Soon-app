@@ -1,17 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ProductCard from "./ProductCard";
 import Categories from "./Categories";
 import api from "../../../config/axiosConfig";
 import { useNavigate } from "react-router-dom";
 
-
 const Home = () => {
-  const [activeTab, setActiveTab] = useState(localStorage.getItem('lastActiveTab')||"all");
+  const [activeTab, setActiveTab] = useState(localStorage.getItem('lastActiveTab') || "all");
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [page] = useState(1); // for now, static page
-  const [sortBy, setSortBy] = useState("expiry"); // default sort
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [sortBy, setSortBy] = useState("expiry");
   const navigate = useNavigate();
+  const loaderRef = useRef(null);
 
   const handleDelete = async (id) => {
     try {
@@ -21,19 +22,20 @@ const Home = () => {
       console.error("Error deleting product:", error);
     }
   };
-  
 
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
         const res = await api.get("/product/upcoming", {
-          params: {
-            page,
-            sortBy,
-          },
+          params: { page, sortBy },
         });
-        setProducts(res.data.products || []);
+
+        setProducts((prev) =>
+          page === 1 ? res.data.products : [...prev, ...res.data.products]
+        );
+
+        setTotalPages(res.data.totalPages || 1);
       } catch (error) {
         console.error("Failed to fetch products:", error);
       } finally {
@@ -44,34 +46,72 @@ const Home = () => {
     fetchProducts();
   }, [page, sortBy]);
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loading && page < totalPages) {
+          setPage((prev) => prev + 1);
+        }
+      },
+      { threshold: 1.0 }
+    );
+
+    if (loaderRef.current) {
+      observer.observe(loaderRef.current);
+    }
+
+    return () => {
+      if (loaderRef.current) {
+        observer.unobserve(loaderRef.current);
+      }
+    };
+  }, [loading, page, totalPages]);
+
+  useEffect(() => {
+    setProducts([]);
+    setPage(1);
+    setTotalPages(1);
+  }, [sortBy]);
+
   return (
     <div className="p-4">
       {/* Tabs */}
       <div className="flex justify-between items-start">
         <div className="flex gap-4 mb-6">
-        <button
-          onClick={() => {localStorage.setItem('lastActiveTab',"all");setActiveTab("all")}}
-          className={`px-4 py-2 rounded ${
-            activeTab === "all"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-200 text-gray-700"
-          }`}
-        >
-          All <span className="hidden md:visible">products</span>
-        </button>
-        <button
-          onClick={() => {localStorage.setItem('lastActiveTab',"categories");setActiveTab("categories")}}
-          className={`px-4 py-2 rounded ${
-            activeTab === "categories"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-200 text-gray-700"
-          }`}
-        >
-          <span className="hidden md:visible">View</span> Categories
-        </button>
+          <button
+            onClick={() => {
+              localStorage.setItem("lastActiveTab", "all");
+              setActiveTab("all");
+            }}
+            className={`px-4 py-2 rounded ${
+              activeTab === "all"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200 text-gray-700"
+            }`}
+          >
+            All <span className="hidden md:inline">Products</span>
+          </button>
+          <button
+            onClick={() => {
+              localStorage.setItem("lastActiveTab", "categories");
+              setActiveTab("categories");
+            }}
+            className={`px-4 py-2 rounded ${
+              activeTab === "categories"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200 text-gray-700"
+            }`}
+          >
+            <span className="hidden md:inline">View</span> Categories
+          </button>
         </div>
 
-        <button onClick={()=>navigate('/add-product')} className="px-4 py-2 mr-10px bg-green-500 text-white rounded">Add product</button>
+        <button
+          onClick={() => navigate("/add-product")}
+          className="px-4 py-2 mr-10px bg-green-500 text-white rounded"
+        >
+          Add Product
+        </button>
       </div>
 
       {/* Sort Selector */}
@@ -93,15 +133,17 @@ const Home = () => {
       {activeTab === "all" ? (
         <>
           <h2 className="text-2xl font-semibold mb-4">All Products</h2>
-          {loading ? (
-            <p>Loading...</p>
-          ) : (
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-              {products.map((product) => (
-                <ProductCard key={product._id} product={product} onDelete={()=>handleDelete(product._id)}/>
-              ))}
-            </div>
-          )}
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {products.map((product) => (
+              <ProductCard
+                key={product._id}
+                product={product}
+                onDelete={() => handleDelete(product._id)}
+              />
+            ))}
+          </div>
+          {loading && <p className="mt-4 text-gray-500">Loading more...</p>}
+          <div ref={loaderRef} className="h-1" />
         </>
       ) : (
         <Categories />
@@ -111,4 +153,3 @@ const Home = () => {
 };
 
 export default Home;
-

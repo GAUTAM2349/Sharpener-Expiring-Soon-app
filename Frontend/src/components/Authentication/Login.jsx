@@ -94,7 +94,7 @@ function Login() {
         >
           Submit
         </button>
-        <div className="text-white pt-14">don't have account? <span onClick={()=>navigate('/register')} className="border-b-1">Signup</span></div>
+        <div onClick={()=>navigate('/register')} className="text-white pt-14 cursor-pointer">don't have account? <span  className="border-b-1">Signup</span></div>
       </form>
     </div>
   );

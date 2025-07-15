@@ -27,7 +27,7 @@ export default function AddProduct() {
       expiry: expiryDate,
       purchaseDate,
       category,
-      userId: user._id
+      userId: user?._id
     };
 
     try {

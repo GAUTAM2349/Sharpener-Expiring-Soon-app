@@ -107,7 +107,9 @@ function Signup() {
         >
           Sign Up
         </button>
+        <span onClick={()=>navigate('/login')} className="mt-7 text-white cursor-pointer">Already a user? <span className="underline">Login</span></span>
       </form>
+      
     </div>
   );
 }
