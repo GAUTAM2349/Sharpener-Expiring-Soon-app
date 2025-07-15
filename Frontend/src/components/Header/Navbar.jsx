@@ -35,8 +35,8 @@ function NavBar() {
   }, [isOpen]);
 
   return (
-    <nav ref={navRef} className="bg-white border-gray-200 dark:bg-gray-900">
-      <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+    <nav ref={navRef} className="sticky bg-white border-gray-200 z-100 dark:bg-gray-900">
+      <div className="max-w-screen flex flex-wrap items-center justify-between mx-auto p-4 md:mr-[150px]">
         <a
           onClick={() => navigate("/")}
           className="flex items-center space-x-3 rtl:space-x-reverse"
@@ -52,7 +52,7 @@ function NavBar() {
         </a>
 
         {/* Hamburger Button */}
-        <div className="text-white absolute top-6 right-20">{user?.name}</div>
+        <div className="text-amber-950">{user?.name?.split('')[0]}</div>
         <button
           type="button"
           className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"

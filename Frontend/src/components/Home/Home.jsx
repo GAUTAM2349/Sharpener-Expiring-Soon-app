@@ -1,18 +1,22 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import ProductCard from "./ProductCard";
 import Categories from "./Categories";
 import api from "../../../config/axiosConfig";
-import { useNavigate } from "react-router-dom";
+import fetchProducts from "../../../utils/fetchProducts";
 
 const Home = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const loaderRef = useRef(null);
+
   const [activeTab, setActiveTab] = useState(localStorage.getItem('lastActiveTab') || "all");
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [sortBy, setSortBy] = useState("expiry");
-  const navigate = useNavigate();
-  const loaderRef = useRef(null);
+  const sortBy = searchParams.get("sortBy") || "expiry";
 
   const handleDelete = async (id) => {
     try {
@@ -23,29 +27,23 @@ const Home = () => {
     }
   };
 
+  const updateParam = (key, value) => {
+    const params = new URLSearchParams(searchParams);
+    if (value) {
+      params.set(key, value);
+    } else {
+      params.delete(key);
+    }
+
+    setSearchParams(params);
+  };
+
+  
   useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      try {
-        const res = await api.get("/product/upcoming", {
-          params: { page, sortBy },
-        });
-
-        setProducts((prev) =>
-          page === 1 ? res.data.products : [...prev, ...res.data.products]
-        );
-
-        setTotalPages(res.data.totalPages || 1);
-      } catch (error) {
-        console.error("Failed to fetch products:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
+    fetchProducts(setLoading, setProducts, setTotalPages, page, sortBy, "all");
   }, [page, sortBy]);
 
+  // Infinite scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -67,14 +65,15 @@ const Home = () => {
     };
   }, [loading, page, totalPages]);
 
+  
   useEffect(() => {
-    setProducts([]);
     setPage(1);
+    setProducts([]);
     setTotalPages(1);
   }, [sortBy]);
 
   return (
-    <div className="p-4">
+    <div className="p-4 relative">
       {/* Tabs */}
       <div className="flex justify-between items-start">
         <div className="flex gap-4 mb-6">
@@ -120,7 +119,7 @@ const Home = () => {
           <label className="mr-2 font-medium">Sort by:</label>
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
+            onChange={(e) => updateParam("sortBy", e.target.value)}
             className="border px-2 py-1 rounded"
           >
             <option value="expiry">Expiry</option>
@@ -153,3 +152,5 @@ const Home = () => {
 };
 
 export default Home;
+
+

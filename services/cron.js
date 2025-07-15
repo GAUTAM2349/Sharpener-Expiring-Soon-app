@@ -14,10 +14,11 @@ const notifyExpiredProducts = async () => {
 
     const expiredProducts = await Product.find({
       expiry: { $lt: today },
+      expiryNotified: false,
     });
 
     if (!expiredProducts.length) {
-      console.log("No expired products found today.");
+      console.log("No new expired products found today.");
       return;
     }
 
@@ -30,7 +31,7 @@ const notifyExpiredProducts = async () => {
         (product) => product.userId.toString() === user._id.toString()
       );
 
-      if (!userProducts.length) continue; 
+      if (!userProducts.length) continue;
 
       const names = userProducts.map((p) => p.name).join(", ");
       const payload = JSON.stringify({
@@ -44,6 +45,12 @@ const notifyExpiredProducts = async () => {
           payload
         );
         console.log(`Notification sent to ${user.email}`);
+
+        const productIds = userProducts.map((p) => p._id);
+        await Product.updateMany(
+          { _id: { $in: productIds } },
+          { $set: { expiryNotified: true } }
+        );
       } catch (err) {
         console.error(`Failed to send notification to ${user.email}`, err);
       }

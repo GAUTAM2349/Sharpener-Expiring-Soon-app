@@ -1,6 +1,5 @@
 const Product = require("../models/Product");
 
-
 const createProduct = async (req, res) => {
   try {
     const {
@@ -13,10 +12,9 @@ const createProduct = async (req, res) => {
     } = req.body;
 
     console.log("yes it reached inside controller");
-    
 
     if (!name || !expiry || !purchaseDate || !category) {
-      return res.status(400).json({ message: 'Required fields missing' });
+      return res.status(400).json({ message: "Required fields missing" });
     }
 
     const newProduct = new Product({
@@ -24,28 +22,23 @@ const createProduct = async (req, res) => {
       expiry: new Date(expiry),
       purchaseDate: new Date(purchaseDate),
       manufacturingDate: manufacturingDate ? new Date(manufacturingDate) : null,
-      category:category.toLowerCase(),
-      description: description || '',
-      userId : req.user._id,
+      category: category.toLowerCase(),
+      description: description || "",
+      userId: req.user._id,
     });
 
     await newProduct.save();
 
-    res.status(201).json({ message: 'Product created', product: newProduct });
+    res.status(201).json({ message: "Product created", product: newProduct });
   } catch (error) {
-    console.error('Error creating product:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error creating product:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-
 const getUpcomingExpiries = async (req, res) => {
   try {
-    const {
-      category = "all",
-      sortBy = "expiry",
-      page = 1,
-    } = req.query;
+    const { category = "all", sortBy = "expiry", page = 1 } = req.query;
 
     const ITEMS_PER_PAGE = 10;
     const skip = (parseInt(page) - 1) * ITEMS_PER_PAGE;
@@ -59,18 +52,15 @@ const getUpcomingExpiries = async (req, res) => {
     const sortOrder = sortBy === "expiry" ? 1 : -1;
     const sortOptions = { [sortField]: sortOrder };
 
-    // 🔍 Total count for pagination
     const totalItems = await Product.countDocuments(filter);
     const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
 
-    // 📦 Fetch paginated data 
     const products = await Product.find(filter)
       .sort(sortOptions)
       .skip(skip)
       .limit(ITEMS_PER_PAGE)
       .exec();
 
-    // ✅ Send pagination info
     res.status(200).json({
       products,
       currentPage: parseInt(page),
@@ -83,9 +73,6 @@ const getUpcomingExpiries = async (req, res) => {
   }
 };
 
-
-
-
 const deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
@@ -93,14 +80,16 @@ const deleteProduct = async (req, res) => {
 
     const product = await Product.findOne({ _id: id, userId });
     if (!product) {
-      return res.status(404).json({ message: 'Product not found or unauthorized' });
+      return res
+        .status(404)
+        .json({ message: "Product not found or unauthorized" });
     }
 
     await Product.deleteOne({ _id: id });
-    res.status(200).json({ message: 'Product deleted' });
+    res.status(200).json({ message: "Product deleted" });
   } catch (err) {
-    console.error('Delete error:', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Delete error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -124,12 +113,9 @@ const updateProduct = async (req, res) => {
       purchaseDate: new Date(purchaseDate),
       manufacturingDate: manufacturingDate ? new Date(manufacturingDate) : null,
       category,
-      description: description || '',
+      description: description || "",
+      expiryNotified: false
     };
-
-    if (req.file) {
-      updates.imageUrl = `/uploads/${req.file.filename}`;
-    }
 
     const updatedProduct = await Product.findOneAndUpdate(
       { _id: id, userId },
@@ -138,16 +124,23 @@ const updateProduct = async (req, res) => {
     );
 
     if (!updatedProduct) {
-      return res.status(404).json({ message: 'Product not found or unauthorized' });
+      return res
+        .status(404)
+        .json({ message: "Product not found or unauthorized" });
     }
 
-    res.status(200).json({ message: 'Product updated', product: updatedProduct });
+    res
+      .status(200)
+      .json({ message: "Product updated", product: updatedProduct });
   } catch (err) {
-    console.error('Update error:', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Update error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-
-
-module.exports = { createProduct, deleteProduct, updateProduct, getUpcomingExpiries };
+module.exports = {
+  createProduct,
+  deleteProduct,
+  updateProduct,
+  getUpcomingExpiries,
+};

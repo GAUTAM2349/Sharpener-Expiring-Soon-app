@@ -11,7 +11,8 @@ const ProductCard = ({ product, onDelete }) => {
           <span className="font-medium">Category:</span> {product.category}
         </p>
         <p className="text-sm text-gray-600">
-          <span className="font-medium">Purchased:</span> {product.purchaseDate}
+          <span className="font-medium">Purchased:</span> {new Date(product.purchaseDate).toLocaleDateString()}
+
         </p>
         <p
           className={`text-sm ${
@@ -20,7 +21,8 @@ const ProductCard = ({ product, onDelete }) => {
               : "text-gray-600"
           }`}
         >
-          <span className="font-medium">Expires:</span> {product.expiry}
+          <span className="font-medium">Expires:</span> {new Date(product.expiry).toLocaleDateString()}
+
         </p>
       </div>
 

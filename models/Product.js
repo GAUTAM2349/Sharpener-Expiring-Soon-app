@@ -23,16 +23,6 @@ const productSchema = new mongoose.Schema(
       enum: ["food", "grocery", "medicine", "cosmetics","babycare", "others"],
       required: true,
     },
-    description: {
-      type: String,
-      default: "",
-      required: false,
-    },
-    imageUrl: {
-      type: String,
-      default: null,
-      required: false,
-    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

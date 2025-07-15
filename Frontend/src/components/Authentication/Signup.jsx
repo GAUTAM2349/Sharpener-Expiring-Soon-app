@@ -40,7 +40,8 @@ function Signup() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center px-4">
+    <div className="min-h-screen w-full flex flex-col sm:flex-row items-center justify-center px-4">
+       <h1 className="absolute top-0 sm:relative text-3xl  md:text-5xl font-sans font-bold text-blue-900 px-4 py-8  m-0 sm:mr-[30px]"> Dispose, if it's expired!</h1>
       <form
         onSubmit={handleSubmit}
         className="w-full max-w-md sm:max-w-lg md:max-w-xl bg-blue-900 p-8 py-30 rounded-lg shadow-lg flex flex-col justify-between min-h-[450px]"
