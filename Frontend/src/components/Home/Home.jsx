@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import ProductCard from "./ProductCard";
 import Categories from "./Categories";
 import api from "../../../config/axiosConfig";
 import fetchProducts from "../../../utils/fetchProducts";
+import { AuthContext } from "../../../utils/contexts/AuthProvider";
 
 const Home = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -11,12 +12,17 @@ const Home = () => {
   const loaderRef = useRef(null);
 
   const [activeTab, setActiveTab] = useState(localStorage.getItem('lastActiveTab') || "all");
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const sortBy = searchParams.get("sortBy") || "expiry";
+
+  const {user} = useContext(AuthContext);
+
+  console.log("user is : ",user);
 
   const handleDelete = async (id) => {
     try {
@@ -76,7 +82,7 @@ const Home = () => {
     <div className="p-4 relative">
       {/* Tabs */}
       <div className="flex justify-between items-start">
-        <div className="flex gap-4 mb-6">
+        <div className="flex gap-4 mb-3 sm:mb-6">
           <button
             onClick={() => {
               localStorage.setItem("lastActiveTab", "all");
@@ -115,7 +121,7 @@ const Home = () => {
 
       {/* Sort Selector */}
       {activeTab === "all" && (
-        <div className="mb-4">
+        <div className="mb-[0.8vh]">
           <label className="mr-2 font-medium">Sort by:</label>
           <select
             value={sortBy}
@@ -131,7 +137,7 @@ const Home = () => {
       {/* Content */}
       {activeTab === "all" ? (
         <>
-          <h2 className="text-2xl font-semibold mb-4">All Products</h2>
+          <h2 className="text-2xl font-extralight mb-1 sm:mb-4">All Products</h2>
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {products.map((product) => (
               <ProductCard

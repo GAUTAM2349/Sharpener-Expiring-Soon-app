@@ -78,7 +78,7 @@ const login = async (req, res) => {
     }
 
     const authenticationToken = setUser(user);
-
+    console.log("yes user is getting logged in");
     return res.status(200).json({
       message: "Logged in successfully.",
       token: authenticationToken,

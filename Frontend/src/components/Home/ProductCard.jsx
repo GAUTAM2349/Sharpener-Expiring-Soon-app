@@ -4,7 +4,7 @@ const ProductCard = ({ product, onDelete }) => {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-white shadow-md rounded-xl p-4 hover:shadow-lg transition-all duration-200 flex flex-col gap-2 justify-between relative">
+    <div className="bg-white shadow-md rounded-xl p-3 sm:p-4 hover:shadow-lg transition-all duration-200 flex flex-col gap-2 justify-between relative">
       <div>
         <h4 className="text-xl font-semibold mb-1">{product.name}</h4>
         <p className="text-sm text-gray-600">

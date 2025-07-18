@@ -7,7 +7,7 @@ import { useEffect } from "react";
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { isLoading, isAuthenticated, setIsAuthenticated } = useContext(AuthContext);
+  const { isLoading, isAuthenticated, setIsAuthenticated,checkAuth } = useContext(AuthContext);
   const navigate = useNavigate();
 
   if (isLoading) return <div>Loading...</div>;
@@ -15,22 +15,29 @@ function Login() {
   if (isAuthenticated) return <Navigate to="/" replace />;
 
   const handleSubmit = async (e) => {
+
     e.preventDefault();
+
     try {
+
       const res = await api.post("/user/login", {
         email,
         password,
       });
+
       console.log("Login Success:", res.data);
 
       const { message, token } = res.data;
 
       if (res.status === 200) {
+
         if (token) {
           localStorage.setItem("token", token);
           console.log("token set successfully"); 
-          setTimeout(() => {
+
+          setTimeout(async () => {
             // navigate("/");
+            await checkAuth();
             setIsAuthenticated(true);
           }, 0);
         } else {
@@ -43,12 +50,17 @@ function Login() {
     }
   };
 
+
+
   return (
     <div className="min-h-screen w-full flex  flex-col sm:flex-row items-center justify-center px-4">
-      <h1 className="absolute top-0 sm:relative text-3xl md:text-5xl font-sans font-bold text-blue-900 px-4 py-8  m-0 sm:mr-[30px]"> Dispose, if it's expired!</h1>
+      <h1 className="absolute text-center top-0 sm:relative text-3xl  md:text-5xl font-sans font-bold text-blue-900 px-15 py-8  m-0 sm:mr-[30px]">
+        {" "}
+        Dispose, if it's <span className="text-amber-500">expired!</span>
+      </h1>
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md sm:max-w-lg md:max-w-xl bg-blue-900 p-8 py-30 rounded-lg shadow-lg flex flex-col justify-between min-h-[400px] relative"
+        className="w-full max-w-md sm:max-w-lg md:max-w-xl bg-blue-900 p-8 py-[10vh] rounded-lg shadow-lg flex flex-col justify-between min-h-[400px] relative"
       >
         <h2 className="text-white pb-10">Buddy, login please!</h2>
         <div className="flex-1">

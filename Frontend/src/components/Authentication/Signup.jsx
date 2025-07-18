@@ -7,10 +7,11 @@ function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { isLoading, isAuthenticated, setIsAuthenticated } = useContext(AuthContext);
+  const { isLoading, isAuthenticated, setIsAuthenticated } =
+    useContext(AuthContext);
   const navigate = useNavigate();
 
-  if (isLoading) return <div>Loading...</div>;
+  // if (isLoading) return <div>Loading...</div>;
 
   if (isAuthenticated) return <Navigate to="/" replace />;
 
@@ -25,7 +26,7 @@ function Signup() {
 
       const { token } = res.data;
 
-      if (res.status === 201 ) {
+      if (res.status === 201) {
         localStorage.setItem("token", token);
         console.log("Signup successful and token stored.");
         setTimeout(() => {
@@ -41,10 +42,13 @@ function Signup() {
 
   return (
     <div className="min-h-screen w-full flex flex-col sm:flex-row items-center justify-center px-4">
-       <h1 className="absolute top-0 sm:relative text-3xl  md:text-5xl font-sans font-bold text-blue-900 px-4 py-8  m-0 sm:mr-[30px]"> Dispose, if it's expired!</h1>
+      <h1 className="absolute text-center top-0 sm:relative text-3xl  md:text-5xl font-sans font-bold text-blue-900 px-[8vh] py-8  m-0 sm:mr-[30px]">
+        {" "}
+        Dispose, if it's <span className="text-amber-500">expired!</span>
+      </h1>
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md sm:max-w-lg md:max-w-xl bg-blue-900 p-8 py-30 rounded-lg shadow-lg flex flex-col justify-between min-h-[450px]"
+        className="w-full max-w-md sm:max-w-lg md:max-w-xl bg-blue-900 p-8 py-10 rounded-lg shadow-lg flex flex-col justify-between min-h-[400px]"
       >
         <h2 className="text-white pb-10">Let’s get you signed up!</h2>
         <div className="flex-1">
@@ -108,9 +112,13 @@ function Signup() {
         >
           Sign Up
         </button>
-        <span onClick={()=>navigate('/login')} className="mt-7 text-white cursor-pointer">Already a user? <span className="underline">Login</span></span>
+        <span
+          onClick={() => navigate("/login")}
+          className="mt-7 text-white cursor-pointer"
+        >
+          Already a user? <span className="underline">Login</span>
+        </span>
       </form>
-      
     </div>
   );
 }

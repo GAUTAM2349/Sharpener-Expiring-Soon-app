@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:4010/api",
+  // baseURL: "http://localhost:4010/api",
+  baseURL: "https://beatles-liverpool-latin-pill.trycloudflare.com/api"
 });
 
 
